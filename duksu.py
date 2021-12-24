@@ -8,18 +8,34 @@ maxY, maxX = screen.getmaxyx()
 curses.curs_set(0)
 
 DIRECTION = ["RIGHT", "LEFT", "UP", "DOWN"]
+WORM_OBJS = []
 
 class win:
     pass
+
+class Worm:
+
+    def __init__(self, posY, posX, icon = "~"):
+        self.posY = posY
+        self.posX = posX
+        self.position = [posY, posX]
+        self.icon = icon
+
+    def setWorm(self):
+        return self.posY, self.posX, self.icon
 
 class Pet:
     maxY, maxX = screen.getmaxyx()
     def __init__(self, name, direction = "RIGHT", posY = 1, posX = 1):
         self.name = name
         self.direction = direction
+        self.position = [posY, posX]
         self.posY = posY
         self.posX = posX
         self.icon = "d"
+
+    def peck(self):
+        pass
 
     def facing(self):
         if self.direction == "RIGHT" or self.direction == "UP":
@@ -64,6 +80,12 @@ class MenuWindow:
     def addstr(self, y, x, string, attr=0):
         self.window.addstr(y, x, string, attr)
 
+    def addch(self, y, x, char, attr=0):
+        self.window.addch(y, x, char, attr)
+
+    def delch(self, y, x):
+        self.window.delch(y,x)
+
     # Resize windows when terminal is resized.
     # Currently not working right.
     def resize(self,newH,newW):
@@ -72,12 +94,18 @@ class MenuWindow:
         self.window.box()
         self.window.refresh()
 
+def makeWorm(maxY, maxX):
+    randY, randX = random.randrange(1, int(maxY/2-2)), random.randrange(1, int(maxX/2-2))
+    worm_obj = Worm(randY, randX)
+    WORM_OBJS.append(worm_obj)
+
 def main(screen):
     duck = Pet('Ducksu')
+    wormsEaten = 0
     while True:
         #resize = curses.is_term_resized(maxY, maxX)
 
-        win.top_left = MenuWindow('', int(maxY / 2), int(maxX / 2), 0, 0)
+        win.top_left = MenuWindow(str(wormsEaten), int(maxY / 2), int(maxX / 2), 0, 0)
         win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
         win.bot_left = MenuWindow('Bottom Left', int(maxY / 2), int(maxX / 2), int(maxY / 2), 0)
         win.right = MenuWindow('Right Side', int(maxY), int(maxX / 2), 0, int(maxX / 2))
@@ -85,7 +113,25 @@ def main(screen):
         win.top_left.refresh()
         win.bot_left.refresh()
         win.right.refresh()
-        curses.napms(500)
+
+        if random.randrange(0,50) >= 40 and len(WORM_OBJS) < 5:
+            makeWorm(maxY, maxX)
+
+        for i in WORM_OBJS:
+            if duck.posY == i.posY and duck.posX == i.posX:
+                duck.peck()
+                wormsEaten += 1
+                win.top_left.delch(i.posY, i.posX)
+                WORM_OBJS.remove(i)
+                win.top_left.refresh()
+                break
+
+            win.top_left.addstr(i.setWorm()[0], i.setWorm()[1], i.setWorm()[2])
+
+            win.top_left.refresh()
+
+
+        curses.napms(250)
 
         duck.direction = random.choice(DIRECTION)
         duck.facing()
@@ -97,7 +143,5 @@ def main(screen):
         #    win.top_left.resize(int(maxY / 2), int(maxX / 2))
         #    win.bot_left.resize(int(maxY / 2), int(maxX / 2))
         #    win.right.resize(int(maxY), int(maxX / 2))
-
-
 
 wrapper(main)
