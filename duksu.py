@@ -99,39 +99,47 @@ def makeWorm(winObject):
     randY, randX = random.randrange(1, winObject.height - 2), random.randrange(1, winObject.width - 2)
     WORM_OBJS.append(Worm(randY, randX))
 
-
+# Main function with curses screen passed to it for Wrapper()
 def main(screen):
     duck = Pet('Ducksu')
     while True:
-
+        # Initialize Curses windows
         Win.top_left = MenuWindow('', int(maxY / 2), int(maxX / 2), 0, 0)
-        Win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
         Win.bot_left = MenuWindow('Bottom Left', int(maxY / 2), int(maxX / 2), int(maxY / 2), 0)
         Win.right = MenuWindow('Worms Eaten: ' + str(duck.wormsEaten), int(maxY), int(maxX / 2), 0, int(maxX / 2))
 
+        # Place Duck in Top Left window
+        Win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
+
+        # Refresh all windows
         Win.top_left.refresh()
         Win.bot_left.refresh()
         Win.right.refresh()
 
-        if random.randrange(0, 1) >= 0 and len(WORM_OBJS) < 500:
-            makeWorm(Win.top_left)
+        # ~2% chance to spawn a worm if less than 5 worms are present every 'tick'
+        if random.randrange(0, 1000) <= 80 and len(WORM_OBJS) < 5:
+            makeWorm(Win.top_left) # Worm objects are stored in the global list WORM_OBJS
 
+        # Iterate through worm objects
         for i in WORM_OBJS:
+            # Check if duck and worm are on the same square
             if duck.posY == i.posY and duck.posX == i.posX:
-                duck.peck(i, Win.top_left)
-
+                duck.peck(i, Win.top_left) # Increments 'wormsEaten', deletes '~' from current position, then removes worm object from WORM_OBJ
                 Win.top_left.refresh()
                 break
 
+            # Draw '~' at random y,x within top left window, then update window.
             Win.top_left.addstr(i.setWorm()[0], i.setWorm()[1], i.setWorm()[2])
 
             Win.top_left.refresh()
 
-        curses.napms(100)
+        # 1 'tick' = 750 ms
+        curses.napms(750)
 
+        # Set direction duck is facing, change icon, move 1 square in that direction (Try putting 'DIRECTION' in Pet class)
         duck.direction = random.choice(DIRECTION)
         duck.facing()
         duck.waddle(Win.top_left)
 
-
+# Call main through curses.wrapper
 wrapper(main)
