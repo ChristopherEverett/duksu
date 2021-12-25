@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 import curses
 import random
-# import sys
-# import tty
 from curses import wrapper
 
 screen = curses.initscr()
@@ -107,7 +105,6 @@ def makeWorm(winObject):
 def main(screen):
     duck = Pet('Ducksu')
     while True:
-        # resize = curses.is_term_resized(maxY, maxX)
 
         Win.top_left = MenuWindow('', int(maxY / 2), int(maxX / 2), 0, 0)
         Win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
