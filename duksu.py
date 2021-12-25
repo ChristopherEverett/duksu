@@ -16,18 +16,22 @@ class Win:
 
 
 class Worm:
-
+    """Worms that Duksu can eat."""
     def __init__(self, posY, posX, icon="~"):
         self.posY = posY
         self.posX = posX
         self.position = [posY, posX]
         self.icon = icon
 
+    # Return Worm's position and '~'
     def setWorm(self):
         return self.posY, self.posX, self.icon
 
 
 class Pet:
+    """Pet duck that wanders around the screen and pecks at worms.
+    Future features include 'talking' with owner, splashing in a pond,
+    having a 'hunger meter' and needing to be fed by owner."""
     def __init__(self, name, direction="RIGHT", posY=1, posX=1):
         self.name = name
         self.direction = direction
@@ -37,17 +41,20 @@ class Pet:
         self.icon = "D"
         self.wormsEaten = 0
 
+    # Increments wormsEaten, removes worm from screen and from WORM_OBJS
     def peck(self, wormObject, winObject):
         self.wormsEaten += 1
         winObject.delch(wormObject.posY, wormObject.posX)
         WORM_OBJS.remove(wormObject)
 
+    # Change which direction duck is facing.
     def facing(self):
         if self.direction == "RIGHT" or self.direction == "UP":
             self.icon = "D"
         else:
             self.icon = "ᗡ"
 
+    # Move around screen depending on direction faced, making sure it is within windows boundary.
     def waddle(self, winObject):
         if self.posX < winObject.width - 2 and self.direction == "RIGHT":
             self.posX += 1
@@ -62,11 +69,13 @@ class Pet:
             self.posY += 1
             return self.posY, self.posX
 
+    # Returns Duck position and 'D' or 'ᗡ' depending on facing.
     def placeIcon(self):
         return self.posY, self.posX, self.icon
 
 
 class MenuWindow:
+    """Set up curses windows in certain sizes with 'window decorations' """
     def __init__(self, title, h, w, y, x):
         self.window = curses.newwin(h, w, y, x)
         self.height = h
@@ -95,6 +104,7 @@ class MenuWindow:
         self.window.delch(y, x)
 
 
+# Create worm objects and store it in WORM_OBJ list. Try to put this in Worm class.
 def makeWorm(winObject):
     randY, randX = random.randrange(1, winObject.height - 2), random.randrange(1, winObject.width - 2)
     WORM_OBJS.append(Worm(randY, randX))
