@@ -103,9 +103,6 @@ def makeWorm(winObject):
     randY, randX = random.randrange(1, winObject.height - 2), random.randrange(1, winObject.width - 2)
     WORM_OBJS.append(Worm(randY, randX))
 
-    #worm_obj = Worm(randY, randX)
-    #WORM_OBJS.append(worm_obj)
-
 
 def main(screen):
     duck = Pet('Ducksu')
@@ -140,13 +137,6 @@ def main(screen):
         duck.direction = random.choice(DIRECTION)
         duck.facing()
         duck.waddle(Win.top_left)
-
-        # curses.napms(3000)
-
-        # if resize is True:
-        #    win.top_left.resize(int(maxY / 2), int(maxX / 2))
-        #    win.bot_left.resize(int(maxY / 2), int(maxX / 2))
-        #    win.right.resize(int(maxY), int(maxX / 2))
 
 
 wrapper(main)
