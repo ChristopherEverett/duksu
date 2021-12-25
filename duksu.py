@@ -99,6 +99,7 @@ def makeWorm(winObject):
     randY, randX = random.randrange(1, winObject.height - 2), random.randrange(1, winObject.width - 2)
     WORM_OBJS.append(Worm(randY, randX))
 
+
 # Main function with curses screen passed to it for Wrapper()
 def main(screen):
     duck = Pet('Ducksu')
@@ -118,13 +119,13 @@ def main(screen):
 
         # ~2% chance to spawn a worm if less than 5 worms are present every 'tick'
         if random.randrange(0, 1000) <= 80 and len(WORM_OBJS) < 5:
-            makeWorm(Win.top_left) # Worm objects are stored in the global list WORM_OBJS
+            makeWorm(Win.top_left)  # Worm objects are stored in the global list WORM_OBJS
 
         # Iterate through worm objects
         for i in WORM_OBJS:
             # Check if duck and worm are on the same square
             if duck.posY == i.posY and duck.posX == i.posX:
-                duck.peck(i, Win.top_left) # Increments 'wormsEaten', deletes '~' from current position, then removes worm object from WORM_OBJ
+                duck.peck(i, Win.top_left)  # Increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
                 Win.top_left.refresh()
                 break
 
@@ -140,6 +141,7 @@ def main(screen):
         duck.direction = random.choice(DIRECTION)
         duck.facing()
         duck.waddle(Win.top_left)
+
 
 # Call main through curses.wrapper
 wrapper(main)
