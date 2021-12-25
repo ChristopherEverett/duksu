@@ -28,15 +28,13 @@ class Worm:
 
 
 class Pet:
-    maxY, maxX = screen.getmaxyx()
-
     def __init__(self, name, direction="RIGHT", posY=1, posX=1):
         self.name = name
         self.direction = direction
         self.position = [posY, posX]
         self.posY = posY
         self.posX = posX
-        self.icon = "d"
+        self.icon = "D"
         self.wormsEaten = 0
 
     def peck(self, wormObject, winObject):
