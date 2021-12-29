@@ -16,6 +16,7 @@ class Win:
 
 class Worm:
     """Worms that Duksu can eat."""
+
     def __init__(self, posY, posX, icon="~"):
         self.posY = posY
         self.posX = posX
@@ -80,6 +81,7 @@ class Pet:
 
 class MenuWindow:
     """Set up curses windows in certain sizes with 'window decorations' """
+
     def __init__(self, title, h, w, y, x):
         self.window = curses.newwin(h, w, y, x)
         self.height = h
@@ -105,7 +107,7 @@ class MenuWindow:
         self.window.addch(y, x, char, attr)
 
     def getch(self):
-       return self.window.getch()
+        return self.window.getch()
 
     def delch(self, y, x):
         self.window.delch(y, x)
@@ -124,7 +126,8 @@ def main(screen):
     while run:
         # Initialize Curses windows
         Win.top_left = MenuWindow('', int(maxY), int(maxX - (maxX / 3)), 0, 0)
-        Win.right = MenuWindow('Worms Eaten: ' + str(duck.wormsEaten), int(maxY), int(maxX / 3), 0, int(maxX - (maxX / 3)))
+        Win.right = MenuWindow('Worms Eaten: ' + str(duck.wormsEaten), int(maxY), int(maxX / 3), 0,
+                               int(maxX - (maxX / 3)))
 
         ch = Win.top_left.getch()
         if ch == 27:
@@ -146,7 +149,8 @@ def main(screen):
             for i in WORM_OBJS:
                 # Check if duck and worm are on the same square
                 if duck.posY == i.posY and duck.posX == i.posX:
-                    duck.peck(i, Win.top_left)  # Increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
+                    # peck() increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
+                    duck.peck(i, Win.top_left)
                     Win.top_left.refresh()
                     break
 
@@ -161,8 +165,6 @@ def main(screen):
             # Set direction duck is facing, change icon, move 1 square in that direction
             duck.facing()
             duck.waddle(Win.top_left)
-
-
 
 
 # Call main through curses.wrapper
