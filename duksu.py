@@ -104,6 +104,9 @@ class MenuWindow:
     def addch(self, y, x, char, attr=0):
         self.window.addch(y, x, char, attr)
 
+    def getch(self):
+       return self.window.getch()
+
     def delch(self, y, x):
         self.window.delch(y, x)
 
@@ -117,41 +120,49 @@ def makeWorm(winObject):
 # Main function with curses screen passed to it for Wrapper()
 def main(screen):
     duck = Pet('Ducksu')
-    while True:
+    run = True
+    while run:
         # Initialize Curses windows
         Win.top_left = MenuWindow('', int(maxY), int(maxX - (maxX / 3)), 0, 0)
         Win.right = MenuWindow('Worms Eaten: ' + str(duck.wormsEaten), int(maxY), int(maxX / 3), 0, int(maxX - (maxX / 3)))
 
-        # Place Duck in Top Left window
-        Win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
+        ch = Win.top_left.getch()
+        if ch == 27:
+            run = False
+        else:
 
-        # Refresh all windows
-        Win.top_left.refresh()
-        Win.right.refresh()
+            # Place Duck in Top Left window
+            Win.top_left.addstr(duck.placeIcon()[0], duck.placeIcon()[1], duck.placeIcon()[2])
 
-        # ~2% chance to spawn a worm if less than 5 worms are present every 'tick'
-        if random.randrange(0, 1000) <= 20 and len(WORM_OBJS) < 5:
-            makeWorm(Win.top_left)  # Worm objects are stored in the global list WORM_OBJS
-
-        # Iterate through worm objects
-        for i in WORM_OBJS:
-            # Check if duck and worm are on the same square
-            if duck.posY == i.posY and duck.posX == i.posX:
-                duck.peck(i, Win.top_left)  # Increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
-                Win.top_left.refresh()
-                break
-
-            # Draw '~' at random y,x within top left window, then update window.
-            Win.top_left.addstr(i.setWorm()[0], i.setWorm()[1], i.setWorm()[2])
-
+            # Refresh all windows
             Win.top_left.refresh()
+            Win.right.refresh()
 
-        # 1 'tick' = 750 ms
-        curses.napms(750)
+            # ~2% chance to spawn a worm if less than 5 worms are present every 'tick'
+            if random.randrange(0, 1000) <= 20 and len(WORM_OBJS) < 5:
+                makeWorm(Win.top_left)  # Worm objects are stored in the global list WORM_OBJS
 
-        # Set direction duck is facing, change icon, move 1 square in that direction
-        duck.facing()
-        duck.waddle(Win.top_left)
+            # Iterate through worm objects
+            for i in WORM_OBJS:
+                # Check if duck and worm are on the same square
+                if duck.posY == i.posY and duck.posX == i.posX:
+                    duck.peck(i, Win.top_left)  # Increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
+                    Win.top_left.refresh()
+                    break
+
+                # Draw '~' at random y,x within top left window, then update window.
+                Win.top_left.addstr(i.setWorm()[0], i.setWorm()[1], i.setWorm()[2])
+
+                Win.top_left.refresh()
+
+            # 1 'tick' = 750 ms
+            curses.napms(750)
+
+            # Set direction duck is facing, change icon, move 1 square in that direction
+            duck.facing()
+            duck.waddle(Win.top_left)
+
+
 
 
 # Call main through curses.wrapper
