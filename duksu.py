@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+#Used ChatGPT-3.5 to add functionality to this code. Chat-GPT suggestions will be marked with ##Chat-gpt##
+
+import math ##chat-gpt##
 import curses
 import random
 from curses import wrapper
@@ -49,7 +52,34 @@ class Duck(Animal):
     # Change which direction duck is facing.
     def facing(self):
         self.direction = random.choice(self.DIRECTIONS)
+    
+    ##Chat-gpt##
+    def detectWorm(self, wormObject):
+        """Check if a worm is within 10 squares of the duck"""
+        distance = math.sqrt((self.posX - wormObject.posX) ** 2 + (self.posY - wormObject.posY) ** 2)
+        return distance <= 10
 
+    ##chat-gpt##
+    def moveTowardsWorm(self, winObject):
+        """Move the duck object towards the closest worm object"""
+        closest_worm = None
+        min_distance = float('inf')
+        for wormObject in WORM_OBJS:
+            distance = math.sqrt((self.posX - wormObject.posX) ** 2 + (self.posY - wormObject.posY) ** 2)
+            if distance < min_distance:
+                closest_worm = wormObject
+                min_distance = distance
+        if closest_worm:
+            if closest_worm.posX > self.posX and self.direction != "LEFT":
+                self.direction = "RIGHT"
+            elif closest_worm.posX < self.posX and self.direction != "RIGHT":
+                self.direction = "LEFT"
+            elif closest_worm.posY > self.posY and self.direction != "UP":
+                self.direction = "DOWN"
+            elif closest_worm.posY < self.posY and self.direction != "DOWN":
+                self.direction = "UP"
+        self.waddle(winObject)
+    
     # Move around screen depending on direction faced, making sure it is within windows boundary.
     def waddle(self, winObject):
         if self.posX < winObject.width - 2 and self.direction == "RIGHT":
@@ -182,10 +212,25 @@ def main(screen):
         # 1 'tick' = 750 ms
         curses.napms(50)
 
+        
+        ##chat-gpt##
+        # Check if a worm is nearby and move towards it
+        for wormObject in WORM_OBJS:
+            if duck.detectWorm(wormObject):
+                duck.moveTowardsWorm(top_left)
+        
+        ##chat-gpt##
+        # Otherwise, move randomly
+        else:
+            duck.facing()
+            duck.waddle(top_left)
+                
         # Set direction duck is facing, change icon, move 1 square in that direction
         top_left.addstr(duck.posY, duck.posX, ' ')
-        duck.facing()
-        duck.waddle(top_left)
+        
+        #possibly redundant due to chat-gpt's suggestions
+        #duck.facing()
+        #duck.waddle(top_left)
 
 
 # Call main through curses.wrapper
