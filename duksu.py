@@ -20,10 +20,13 @@ class Animal:
 @dataclass
 class Worm(Animal):
     """Worms that Duksu can eat."""
+    
     # Create worm objects and store it in WORM_OBJ list. Try to put this in Worm class.
-    def makeWorm(winObject):
+    @classmethod
+    def makeWorm(cls,winObject):
+        wormIcon = '~'
         randY, randX = random.randrange(2, winObject.height - 2), random.randrange(2, winObject.width - 2)
-        return Worm(randY, randX, '~')
+        return cls(randY, randX, wormIcon)
 
     # Return Worm's position and '~'
     def setWorm(self):
