@@ -211,37 +211,6 @@ def main(screen):
             field.addstr(*i.setWorm())
             field.refresh()
 
-<<<<<<< HEAD
-        # 1 'tick' = 500 ms
-        curses.napms(500)
-
-        
-        ##chat-gpt##
-        # Check if a worm is nearby and move towards it
-        for wormObject in WORM_OBJS:
-            if duck.detectWorm(wormObject):
-                top_left.addstr(duck.posY, duck.posX, ' ')
-                duck.moveTowardsWorm(top_left)
-                
-        
-        ##chat-gpt##
-        # Otherwise, move randomly
-        else:
-            duck.facing()
-            top_left.addstr(duck.posY, duck.posX, ' ')
-            duck.waddle(top_left)
-            
-            
-                
-        # Set direction duck is facing, change icon, move 1 square in that direction
-        top_left.addstr(duck.posY, duck.posX, ' ')
-        
-        #possibly redundant due to chat-gpt's suggestions
-        #duck.facing()
-        #duck.waddle(top_left)
-
-
-=======
         # 1 'tick' = 750 ms
         curses.napms(750)
 
@@ -259,6 +228,5 @@ def main(screen):
         else:
                duck.facing()
                duck.waddle(field)
->>>>>>> 39be22c7fa8bcf84ca7d0afbfd0d84a1c087f605
 # Call main through curses.wrapper
 wrapper(main)
