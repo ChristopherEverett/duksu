@@ -21,7 +21,6 @@ class Animal:
     posX: int
     icon: str
 
-
 @dataclass
 class Worm(Animal):
     """Worms that Duksu can eat."""
@@ -209,21 +208,26 @@ def main(screen):
             top_left.addstr(*i.setWorm())
             top_left.refresh()
 
-        # 1 'tick' = 750 ms
-        curses.napms(50)
+        # 1 'tick' = 500 ms
+        curses.napms(500)
 
         
         ##chat-gpt##
         # Check if a worm is nearby and move towards it
         for wormObject in WORM_OBJS:
             if duck.detectWorm(wormObject):
+                top_left.addstr(duck.posY, duck.posX, ' ')
                 duck.moveTowardsWorm(top_left)
+                
         
         ##chat-gpt##
         # Otherwise, move randomly
         else:
             duck.facing()
+            top_left.addstr(duck.posY, duck.posX, ' ')
             duck.waddle(top_left)
+            
+            
                 
         # Set direction duck is facing, change icon, move 1 square in that direction
         top_left.addstr(duck.posY, duck.posX, ' ')
