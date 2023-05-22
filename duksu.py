@@ -95,11 +95,11 @@ class Duck(Animal):
 
     def facing(self):
         """Set the direction that Duksu is facing"""
-        if self.posY and self.posX == 1:
+        if self.Y_position and self.X_position == 1:
             self.direction = random.choice(["RIGHT", "DOWN"])
-        elif self.posY == 1 and self.posX != 1:
+        elif self.Y_position == 1 and self.X_position != 1:
             self.direction = random.choice(["RIGHT", "LEFT", "DOWN"])
-        elif self.posY != 1 and self.posX == 1:
+        elif self.Y_position != 1 and self.X_position == 1:
             self.direction = random.choice(["RIGHT", "UP", "DOWN"])
         else:
             self.direction = random.choice(self.DIRECTIONS)
