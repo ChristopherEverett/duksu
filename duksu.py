@@ -6,31 +6,34 @@ from curses import wrapper
 from dataclasses import dataclass
 
 screen = curses.initscr()
-maxY, maxX = screen.getmaxyx()
+max_y, max_x = screen.getmaxyx()
 curses.curs_set(0)
 
-WORM_OBJS = []
+worm_object_list = []
 
 @dataclass
 class Animal:
-    posY: int
-    posX: int
+    Y_position: int
+    X_position: int
     icon: str
+
+    def set_animal(self):
+        return self.Y_position, self.X_position, self.icon
+
 
 @dataclass
 class Worm(Animal):
     """Worms that Duksu can eat."""
     
-    # Create worm objects and store it in WORM_OBJ list. Try to put this in Worm class.
-    @classmethod
-    def makeWorm(cls,winObject):
-        wormIcon = '~'
-        randY, randX = random.randrange(2, winObject.height - 2), random.randrange(2, winObject.width - 2)
-        return cls(randY, randX, wormIcon)
+    distance = float('inf')
 
-    # Return Worm's position and '~'
-    def setWorm(self):
-        return self.posY, self.posX, self.icon
+    # Create worm objects and store it in WORM_OBJ list.
+    @classmethod
+    def make_worm(cls,winObject):
+        worm_icon = '~'
+        random_Y, random_X = random.randrange(2, winObject.height - 2), random.randrange(2, winObject.width - 2)
+        return cls(random_Y, random_X, worm_icon)
+
 
 @dataclass
 class Duck(Animal):
@@ -40,50 +43,56 @@ class Duck(Animal):
 
     DIRECTIONS = ["RIGHT", "LEFT", "UP", "DOWN"]
     direction = "RIGHT"
-    wormsEaten = 0
+
+    #Duksu stats
+    worms_eaten = 0
     hunger = 0
-    fun = 100
+    boredom = 0
 
-    def detectWorm(self, wormObject):
-            """Check if a worm is within 10 squares of the duck"""
-            distance = math.sqrt((self.posX - wormObject.posX) ** 2 + (self.posY - wormObject.posY) ** 2)
-            return distance <= 10
+    def duck_action(self, winObject):
+        winObject.addstr(self.Y_position, self.X_position, ' ')
+        if worm_object_list:
+            for worm in worm_object_list:
+                self.detect_worm(worm)
 
-    def moveDuksu(self, winObject):
-        """Move the duck object towards the closest worm object"""
-        closest_worm = None
-        min_distance = float('inf')
-        for wormObject in WORM_OBJS:
-            distance = math.sqrt((self.posX - wormObject.posX) ** 2 + (self.posY - wormObject.posY) ** 2)
-            if distance < min_distance:
-                closest_worm = wormObject
-                min_distance = distance
-        if closest_worm and min_distance <= 10:
-            if closest_worm.posX > self.posX and self.direction != "LEFT":
-                self.direction = "RIGHT"
-                self.waddle(winObject)
-            elif closest_worm.posX < self.posX and self.direction != "RIGHT":
-                self.direction = "LEFT"
-                self.waddle(winObject)
-            elif closest_worm.posY > self.posY and self.direction != "UP":
-                self.direction = "DOWN"
-                self.waddle(winObject)
-            elif closest_worm.posY < self.posY and self.direction != "DOWN":
-                self.direction = "UP"
-                self.waddle(winObject)
-        else:
+        if not worm_object_list or not worm_object_list[0].distance <= 10 :
             self.facing()
             self.waddle(winObject)
-        
 
-    # Increments wormsEaten, removes worm from screen and from WORM_OBJS
+        elif self.Y_position == worm_object_list[0].Y_position and self.X_position == worm_object_list[0].X_position:
+            self.peck(worm_object_list[0], winObject)
+            self.facing()
+            self.waddle(winObject)
+
+        elif worm_object_list[0].distance <= 10 :
+            self.move_towards_worm(worm_object_list[0], winObject)
+
+    def detect_worm(self, wormObject): 
+        """Check if Ducksu sees any worms."""
+        distance = math.sqrt((self.X_position - wormObject.X_position) ** 2 + (self.Y_position - wormObject.Y_position) ** 2)
+        if distance <= 10:
+            wormObject.distance = distance
+            worm_object_list.sort(key = lambda x: x.distance)
+
+    def move_towards_worm(self, closestWorm, winObject):
+        """Move the duck object towards the closest worm object"""
+        if closestWorm.X_position > self.X_position and self.direction != "LEFT":
+            self.direction = "RIGHT"
+        elif closestWorm.X_position < self.X_position and self.direction != "RIGHT":
+            self.direction = "LEFT"
+        elif closestWorm.Y_position > self.Y_position and self.direction != "UP":
+            self.direction = "DOWN"
+        elif closestWorm.Y_position < self.Y_position and self.direction != "DOWN":
+            self.direction = "UP"
+        self.waddle(winObject)
+
+
     def peck(self, wormObject, winObject):
-        """Increments wormsEaten, removes worm from screen and from WORM_OBJS"""
-        self.wormsEaten += 1
-        winObject.addstr(wormObject.posY, wormObject.posX, ' ')
-        WORM_OBJS.remove(wormObject)
+        """Increments worms_eaten, removes worm from screen and from worm_object_list"""
+        self.worms_eaten += 1
+        winObject.addstr(wormObject.Y_position, wormObject.X_position, ' ')
+        worm_object_list.remove(wormObject)
 
-    # Change which direction duck is facing.
     def facing(self):
         """Set the direction that Duksu is facing"""
         if self.posY and self.posX == 1:
@@ -95,25 +104,31 @@ class Duck(Animal):
         else:
             self.direction = random.choice(self.DIRECTIONS)
 
-    # Move around screen depending on direction faced, making sure it is within windows boundary.
     def waddle(self, winObject):
         """Move Duksu one square in the direction he is facing, within window boundary"""
-        if self.posX < winObject.width - 2 and self.direction == "RIGHT":
-            self.posX += 1
-            return self.posY, self.posX
-        elif self.posX > 1 and self.direction == "LEFT":
-            self.posX -= 1
-            return self.posY, self.posX
-        elif self.posY > 1 and self.direction == "UP":
-            self.posY -= 1
-            return self.posY, self.posX
-        elif self.posY < winObject.height - 2 and self.direction == "DOWN":
-            self.posY += 1
-            return self.posY, self.posX
+        if self.X_position < winObject.width - 2 and self.direction == "RIGHT":
+            self.prevX = self.X_position
+            self.X_position += 1
+            Animal.set_animal(self)
+        elif self.X_position > 1 and self.direction == "LEFT":
+            self.prevX = self.X_position
+            self.X_position -= 1
+            Animal.set_animal(self)
+        elif self.Y_position > 1 and self.direction == "UP":
+            self.prevY = self.Y_position
+            self.Y_position -= 1
+            Animal.set_animal(self)
+        elif self.Y_position < winObject.height - 2 and self.direction == "DOWN":
+            self.prevY = self.Y_position
+            self.Y_position += 1
+            Animal.set_animal(self)
 
-    # Returns Duck position and 'D' or 'ᗡ' depending on facing.
-    def placeIcon(self):
-        return self.posY, self.posX, self.icon
+    def increase_hunger(self):
+        self.hunger += 1
+
+    def increase_boredom(self):
+        self.boredom += 1
+
 
 class Windows:
     """Set up curses windows in certain sizes with 'window decorations' """
@@ -131,7 +146,7 @@ class Windows:
         self.window.refresh()
 
     def clear(self):
-        for y in range(3, self.window.getmaxyx()[0] - 1):
+        for y in range(3, self.window.getmax_yx()[0] - 1):
             self.window.move(y, 2)
             self.window.clrtoeol()
         self.window.box()
@@ -148,7 +163,8 @@ class Windows:
     def delch(self, y, x):
         self.window.delch(y, x)
 
-def modeInput(winObject1, mode):
+
+def mode_input(winObject1, mode):
     ch = winObject1.getch()
 
     # Exit program if ESC is pressed
@@ -160,81 +176,53 @@ def modeInput(winObject1, mode):
             return 'MENU'
         else:
             return 'RUN'
-    # If nothing is pressed, return current mode.
- #   elif ch == -1:
-  #      return mode
     else:
         return mode
 
-def refreshScreen(fieldWinObject, menuWinObject):
+
+def refresh_screen(fieldWinObject, statsWinObject):
     fieldWinObject.refresh()
-    menuWinObject.refresh()
+    statsWinObject.refresh()
 
-def drawMenu(winObject):
-    winObject.addstr(0, winObject.width // 2, 'PAUSED')
- #   winObject.refresh()
+def draw_field(winObject, duckObj, wormObj):
+    winObject.addstr(*duckObj.set_animal())
+    if wormObj:
+        for worm in wormObj:
+            winObject.addstr(*worm.set_animal())
 
-def drawField(winObject, duckObj):
-    winObject.addstr(*duckObj.placeIcon())
+def draw_stats(statsObject, duckObject):
+    statsObject.addstr(0, statsObject.width // 2, 'Duksu')
+    statsObject.addstr(2,2, 'Worms Eaten:' + str(duckObject.worms_eaten))
+    statsObject.addstr(3,2, 'Hunger:' + str(duckObject.hunger))
 
 # Main function with curses screen passed to it for Wrapper()
 def main(screen):
-    duck = Duck(1, 1, 'D')
     mode = 'RUN'
 
     # Initialize Curses windows
-    field = Windows('', int(maxY), int(maxX - (maxX / 3)), 0, 0)
-    menu = Windows('', int(maxY), int(maxX / 3), 0,
-                    int(maxX - (maxX / 3)))
-
+    field = Windows('', int(max_y), int(max_x - (max_x / 3)), 0, 0)
+    stats = Windows('', int(max_y), int(max_x / 3), 0, int(max_x - (max_x / 3)))
+    ducksu = Duck(field.height // 2, field.width // 2, 'D')
+    
     while mode == 'RUN':
-        mode = modeInput(field, mode)
+        mode = mode_input(field, mode)
 
-        # List Duck stats in menu window
-        menu.addstr(0, menu.width // 2, 'Duksu')
-        menu.addstr(2,2, 'Y,X:' + str(duck.posY) + ',' + str(duck.posX))
+        # List Duck stats in menu window [PUT THIS INTO ITS OWN FUNCTION: initWindows() ??]
+        draw_stats(stats, ducksu)
 
-        while mode == 'MENU':
-            mode = modeInput(field, mode)
-            drawMenu(menu)
-            drawField(field, duck)
-            refreshScreen(field, menu)
-
-        # Place Duck in Top Left window
-        #field.addstr(*duck.placeIcon())
-        drawField(field, duck)
+        #field.addstr(ducksu.Y_position, ducksu.X_position, ' ')
+        draw_field(field, ducksu, worm_object_list)
 
         # Refresh all windows
-        refreshScreen(field, menu)
+        refresh_screen(field, stats)
 
-        # ~2% chance to spawn a worm if less than 5 worms are present every 'tick'
-        if random.randrange(0, 1000) <= 500 and len(WORM_OBJS) < 5:
-            WORM_OBJS.append(Worm.makeWorm(field))
+        # ~2% chance to spawn a worm if less than 5 worms are present every 'tick', 
+        if random.randrange(0, 1000) <= 20 and len(worm_object_list) < 5:
+            worm_object_list.append(Worm.make_worm(field))
 
+        #field.addstr(ducksu.Y_position, ducksu.X_position, ' ')  # <-- [MUST BE BEFORE duck_action]
+        ducksu.duck_action(field)
 
-        # Iterate through worm objects
-        for i in WORM_OBJS:
-            # Check if duck and worm are on the same square
-            if duck.posY == i.posY and duck.posX == i.posX:
-                # peck() increments 'wormsEaten', deletes '~' from position, removes worm object from WORM_OBJ
-                duck.peck(i, field)
-                drawField(field, duck)
-                field.refresh()
-                break
-
-            # Draw '~' at random y,x within top left window, then update window.
-            field.addstr(*i.setWorm())
-            field.refresh()
-
-        # 1 'tick' = 750 ms
-        curses.napms(50)
-
-        # Check if worm is within 10 sq. of Duksu then move towards it one sq. Otherwise waddle in a random direction.
-        field.addstr(duck.posY, duck.posX, ' ')
-        if WORM_OBJS:
-            duck.moveDuksu(field)
-        else:
-               duck.facing()
-               duck.waddle(field)
+        curses.napms(750)  # 1 'tick' = 750 ms [MUST BE AFTER refresh_screen FOR SOME REASON]
 # Call main through curses.wrapper
 wrapper(main)
