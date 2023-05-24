@@ -68,7 +68,7 @@ class Duck(Animal):
             self.move_towards_worm(worm_object_list[0], winObject)
 
     def detect_worm(self, wormObject): 
-        """Check if Ducksu sees any worms."""
+        """Check if Duksu sees any worms."""
         distance = math.sqrt((self.X_position - wormObject.X_position) ** 2 + (self.Y_position - wormObject.Y_position) ** 2)
         if distance <= 10:
             wormObject.distance = distance
@@ -195,6 +195,11 @@ def draw_stats(statsObject, duckObject):
     statsObject.addstr(2,2, 'Worms Eaten:' + str(duckObject.worms_eaten))
     statsObject.addstr(3,2, 'Hunger:' + str(duckObject.hunger))
 
+def draw_game_windows(field_object, stats_object, duck_object, worm_object):
+    draw_stats(stats_object, duck_object)
+    draw_field(field_object, duck_object, worm_object)
+    refresh_screen(field_object, stats_object)
+
 # Main function with curses screen passed to it for Wrapper()
 def main(screen):
     mode = 'RUN'
@@ -202,26 +207,18 @@ def main(screen):
     # Initialize Curses windows
     field = Windows('', int(max_y), int(max_x - (max_x / 3)), 0, 0)
     stats = Windows('', int(max_y), int(max_x / 3), 0, int(max_x - (max_x / 3)))
-    ducksu = Duck(field.height // 2, field.width // 2, 'D')
+    duksu = Duck(field.height // 2, field.width // 2, 'D')
     
     while mode == 'RUN':
         mode = mode_input(field, mode)
 
-        # List Duck stats in menu window [PUT THIS INTO ITS OWN FUNCTION: initWindows() ??]
-        draw_stats(stats, ducksu)
-
-        #field.addstr(ducksu.Y_position, ducksu.X_position, ' ')
-        draw_field(field, ducksu, worm_object_list)
-
-        # Refresh all windows
-        refresh_screen(field, stats)
+        draw_game_windows(field, stats, duksu, worm_object_list)
 
         # ~2% chance to spawn a worm if less than 5 worms are present every 'tick', 
         if random.randrange(0, 1000) <= 20 and len(worm_object_list) < 5:
             worm_object_list.append(Worm.make_worm(field))
 
-        #field.addstr(ducksu.Y_position, ducksu.X_position, ' ')  # <-- [MUST BE BEFORE duck_action]
-        ducksu.duck_action(field)
+        duksu.duck_action(field)
 
         curses.napms(750)  # 1 'tick' = 750 ms [MUST BE AFTER refresh_screen FOR SOME REASON]
 # Call main through curses.wrapper
